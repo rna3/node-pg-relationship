@@ -1,17 +1,7 @@
 const request = require('supertest');
-const app = require('./server.js');
+const app = require('./app');
 
 describe('Invoices API', () => {
-  let server;
-
-  beforeAll((done) => {
-    server = app.listen(3000, done);
-  });
-
-  afterAll((done) => {
-    server.close(done);
-  });
-
   describe('GET /invoices', () => {
     test('should return list of invoices', async () => {
       const response = await request(app).get('/invoices');
@@ -38,15 +28,11 @@ describe('Invoices API', () => {
   describe('POST /invoices', () => {
     test('should add a new invoice', async () => {
       const newInvoice = { comp_code: 'ibm', amt: 500 };
-      const response = await request(app)
-        .post('/invoices')
-        .send(newInvoice);
+      const response = await request(app).post('/invoices').send(newInvoice);
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('invoice');
       expect(response.body.invoice).toHaveProperty('comp_code', 'ibm');
       expect(response.body.invoice).toHaveProperty('amt', 500);
     });
   });
-
-
 });

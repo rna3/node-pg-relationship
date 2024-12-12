@@ -90,35 +90,53 @@ router.post('/', async (req, res, next) => {
 
 // PUT /invoices/:id - Update an existing invoice
 router.put('/:id', async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const { amt } = req.body;
-  
-      // Check if the amount is provided
-      if (amt === undefined) {
-        throw new ExpressError("Amount is required for updating an invoice.", 400);
-      }
-  
-      // Update the invoice in the database
-      const result = await db.query(
-        `UPDATE invoices 
-         SET amt = $1 
-         WHERE id = $2 
-         RETURNING id, comp_code, amt, paid, add_date, paid_date`,
-        [amt, id]
-      );
-  
-      if (result.rows.length === 0) {
-        throw new ExpressError(`Invoice not found with id: ${id}`, 404);
-      }
-  
-      // Return the updated invoice
-      return res.json({ invoice: result.rows[0] });
-    } catch (err) {
-      // Handle database or input errors
-      return next(err);
+  try {
+    const { id } = req.params;
+    const { amt, paid } = req.body;
+
+    // Check if the amount is provided
+    if (amt === undefined) {
+      throw new ExpressError("Amount is required for updating an invoice.", 400);
     }
-  });
+
+    // Prepare the SQL query based on whether we're paying or un-paying
+    let query = `
+      UPDATE invoices 
+      SET amt = $1, 
+          paid = $2`;
+    
+    let values = [amt, paid];
+
+    // Determine the paid_date based on the 'paid' status
+    if (paid === true) {
+      query += `, paid_date = CURRENT_DATE::date`;
+    } else if (paid === false) {
+      query += `, paid_date = NULL`;
+    } else {
+      // If 'paid' is neither true nor false, keep the existing paid_date
+      query += `, paid_date = paid_date`; // This keeps the current value
+    }
+
+    query += `
+      WHERE id = $3 
+      RETURNING id, comp_code, amt, paid, add_date, paid_date`;
+
+    values.push(id); // Add id to the values array
+
+    // Update the invoice in the database
+    const result = await db.query(query, values);
+
+    if (result.rows.length === 0) {
+      throw new ExpressError(`Invoice not found with id: ${id}`, 404);
+    }
+
+    // Return the updated invoice
+    return res.json({ invoice: result.rows[0] });
+  } catch (err) {
+    // Handle database or input errors
+    return next(err);
+  }
+});
 
 
 // DELETE /invoices/:id - Delete an invoice

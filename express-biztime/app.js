@@ -2,6 +2,7 @@
 const express = require("express");
 const companiesRoutes = require('./routes/companies');
 const invoicesRoutes = require('./routes/invoices');
+const industriesRoutes = require('./routes/industries');
 const ExpressError = require("./expressError")
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 // Mount the companies router
 app.use('/companies', companiesRoutes);
 app.use('/invoices', invoicesRoutes);
+app.use('/industries', industriesRoutes);
 
 
 /** 404 handler */

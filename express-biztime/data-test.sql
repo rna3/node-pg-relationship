@@ -1,4 +1,4 @@
-\c biztime
+\c biztime-test
 
 DROP TABLE IF EXISTS invoices;
 DROP TABLE IF EXISTS companies;
@@ -28,25 +28,3 @@ INSERT INTO invoices (comp_Code, amt, paid, paid_date)
          ('apple', 200, false, null),
          ('apple', 300, true, '2018-01-01'),
          ('ibm', 400, false, null);
-
-
-CREATE TABLE industries (
-    code TEXT PRIMARY KEY,
-    industry TEXT NOT NULL
-);
-
-CREATE TABLE companies_industries (
-    comp_code TEXT NOT NULL REFERENCES companies(code),
-    ind_code TEXT NOT NULL REFERENCES industries(code),
-    PRIMARY KEY (comp_code, ind_code)
-);
-
-INSERT INTO industries (code, industry) VALUES 
-('acct', 'Accounting'),
-('tech', 'Technology'),
-('fin', 'Finance');
-
-INSERT INTO companies_industries (comp_code, ind_code) VALUES 
-('apple', 'tech'),
-('ibm', 'tech'),
-('ibm', 'fin');
